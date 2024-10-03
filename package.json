@@ -1,0 +1,25 @@
+{
+  "name": "fullstack-blog",
+  "version": "1.0.0",
+  "description": "fullstack-blog-application",
+  "main": "server.js",
+  "scripts": {
+    "server": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "blog",
+    "nodejs"
+  ],
+  "author": "Ace",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
