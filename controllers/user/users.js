@@ -47,6 +47,9 @@ const loginController = async (req, res, next) => {
     if (!isPasswordValid) {
       return next(appErr("invalid login credentials"));
     }
+    req.session.userAuth = userFound._id;
+    console.log(req.session);
+
     res.json({ status: "success", user: "User logged in" });
   } catch (error) {
     res.json(error);
@@ -54,9 +57,17 @@ const loginController = async (req, res, next) => {
 };
 
 //get user by id
-const getUserByIdController = async (req, res) => {
+const getUserByIdController = async (req, res, next) => {
   try {
-    res.json({ status: "success", user: "User details" });
+    //user id
+    const userId = req.params.id;
+    //get user
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(appErr("user not found", 404));
+    }
+
+    res.json({ status: "success", data: user });
   } catch (error) {
     res.json(error);
   }
@@ -65,36 +76,89 @@ const getUserByIdController = async (req, res) => {
 //user profile
 const userProfileController = async (req, res) => {
   try {
-    res.json({ status: "success", user: "User profile" });
+    //get the logged in user
+    const userId = req.session.userAuth;
+    //find user
+    const user = await User.findById(userId);
+
+    res.json({ status: "success", data: user });
   } catch (error) {
     res.json(error);
+  }
+};
+
+//update user details
+const updateUserDetailsController = async (req, res, next) => {
+  const { fullname, email } = req.body;
+  try {
+    if (email) {
+      const emailTaken = await User.findOne({ email });
+      if (emailTaken) {
+        return next(appErr("email already taken", 400));
+      }
+    }
+    const user = await User.findByIdAndUpdate(
+      req.session.userAuth,
+      {
+        fullname,
+        email,
+      },
+      { new: true }
+    );
+    res.json({ status: "success", data: user });
+  } catch (error) {
+    return next(appErr(error.message));
   }
 };
 
 //profile photo upload
 const profilePhotoUploadController = async (req, res) => {
+  const file = req.file.path;
+  console.log(file);
+
   try {
-    res.json({ status: "success", user: "User profile photo upload" });
+    //user id
+    const userId = await req.session.userAuth;
+    //user profile photo upload
+    await User.findByIdAndUpdate(userId, { profileImage: file }, { new: true });
+    res.json({ status: "success", user: "User profile photo uploaded" });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
 //cover photo upload
-const coverPhotoUploadController = async (req, res) => {
+const coverPhotoUploadController = async (req, res, next) => {
+  const file = req.file.path;
   try {
+    //user id
+    const userId = await req.session.userAuth;
+    await User.findByIdAndUpdate(userId, { coverImage: file }, { new: true });
+
     res.json({ status: "success", user: "User cover photo upload" });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
 //update password
-const updatePasswordController = async (req, res) => {
+const updatePasswordController = async (req, res, next) => {
+  const { password } = req.body;
   try {
-    res.json({ status: "success", user: "User password updated" });
+    if (!password) {
+      return next(appErr("dont enter empyty password"));
+    }
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+    await User.findByIdAndUpdate(
+      req.session.userAuth,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    res.json({ status: "success", message: "password updated" });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
@@ -116,4 +180,5 @@ module.exports = {
   coverPhotoUploadController,
   updatePasswordController,
   logoutController,
+  updateUserDetailsController,
 };
