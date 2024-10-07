@@ -2,6 +2,7 @@ const User = require("../../models/user/user");
 
 const bcryptjs = require("bcryptjs");
 const appErr = require("../../utils/appErr");
+const session = require("express-session");
 
 //register
 const registerController = async (req, res, next) => {
@@ -79,7 +80,7 @@ const userProfileController = async (req, res) => {
     //get the logged in user
     const userId = req.session.userAuth;
     //find user
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate("posts");
 
     res.json({ status: "success", data: user });
   } catch (error) {
@@ -165,7 +166,13 @@ const updatePasswordController = async (req, res, next) => {
 //logout
 const logoutController = async (req, res) => {
   try {
-    res.json({ status: "success", user: "User logout" });
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send("Logout failed");
+      }
+
+      res.clearCookie("connect.sid");
+    });
   } catch (error) {
     res.json(error);
   }

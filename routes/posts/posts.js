@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const protected = require("../../middlewares/protected");
 const {
   createPostController,
   getAllPostsController,
@@ -9,8 +11,13 @@ const {
 
 const postsRoutes = express.Router();
 
+const storage = require("../../config/cloudinary");
+
+//instance of multer
+const upload = multer({ storage });
+
 //create post
-postsRoutes.post("/", createPostController);
+postsRoutes.post("/", protected, upload.single("image"), createPostController);
 
 //get all posts
 postsRoutes.get("/", getAllPostsController);
@@ -19,9 +26,14 @@ postsRoutes.get("/", getAllPostsController);
 postsRoutes.get("/:id", getPostByIDController);
 
 //delete post
-postsRoutes.delete("/:id", deletePostController);
+postsRoutes.delete("/:id", protected, deletePostController);
 
 //update post
-postsRoutes.put("/:id", updatePostController);
+postsRoutes.put(
+  "/:id",
+  protected,
+  upload.single("image"),
+  updatePostController
+);
 
 module.exports = postsRoutes;

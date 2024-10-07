@@ -53,7 +53,7 @@ userRoutes.put(
 userRoutes.put("/update-password", protected, updatePasswordController);
 
 //user logout
-userRoutes.get("/logout", protected, logoutController);
+userRoutes.post("/logout", protected, logoutController);
 //get user by id
 userRoutes.get("/:id", getUserByIdController);
 
