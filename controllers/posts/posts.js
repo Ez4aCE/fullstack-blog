@@ -33,7 +33,7 @@ const createPostController = async (req, res, next) => {
 //get all posts
 const getAllPostsController = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().populate("comments");
     res.json({ status: "success", data: posts });
   } catch (error) {
     res.json(error);
@@ -45,6 +45,7 @@ const getPostByIDController = async (req, res, next) => {
   try {
     const postId = req.params.id;
     const post = await Post.findById(postId);
+    await post.populate("comments");
     res.json({ status: "success", data: post });
   } catch (error) {
     return next(appErr(error.message));

@@ -4,20 +4,22 @@ const {
   getCommentByIdController,
   deleteCommentController,
   updateCommentController,
-} = require("../../controllers/commnets/comments");
+} = require("../../controllers/comments/comments");
 
-const commenstRoutes = express.Router();
+const commentRoutes = express.Router();
+
+const protected = require("../../middlewares/protected");
 
 //create comment
-commenstRoutes.post("/", createCommentController);
+commentRoutes.post("/:id", protected, createCommentController);
 
 //get comment by id
-commenstRoutes.get("/:id", getCommentByIdController);
+commentRoutes.get("/:id", getCommentByIdController);
 
 //delete comments
-commenstRoutes.delete("/:id", deleteCommentController);
+commentRoutes.delete("/:id", protected, deleteCommentController);
 
 //update comment
-commenstRoutes.put("/:id", updateCommentController);
+commentRoutes.put("/:id", protected, updateCommentController);
 
-module.exports = commenstRoutes;
+module.exports = commentRoutes;
